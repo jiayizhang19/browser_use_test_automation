@@ -1,0 +1,14 @@
+
+import asyncio
+from agent import initialize_agent
+from case import *
+
+
+async def execute(task):
+    agent = initialize_agent(task)
+    history = await agent.run()
+    test_result = history.final_result()
+    print('test result:',test_result)
+    # print('Raw API Response:', json.dumps(test_result, indent=2, ensure_ascii=False)
+
+asyncio.run(execute(other_task))
