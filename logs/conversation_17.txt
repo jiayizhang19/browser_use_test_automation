@@ -1,0 +1,400 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """
+
+** Important **: I am UI Automation tester validating the tasks
+打开 https://corp.m.stage.dongfangfuli.com/bfd-app?union=dfshwx
+输入账号 19900000042 和密码 aa123456
+点击登录
+验证右上角显示 "19900000042"
+验证主页包含 "百福得"
+搜索商品 "2024自动化普通优选"
+点击商品，进入详情页面，点击立即购买
+验证商品名称，价格，数量，总价
+点击提交订单，选择点卡支付
+点击确认支付，验证支付成功
+点击查看订单，验证订单状态，订单编号
+
+""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://corp.m.stage.dongfangfuli.com/bfd-app?union=dfshwx
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action error: Error executing action input_text: Failed to input text into index 3
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input 19900000042 into index 2
+
+ HumanMessage 
+Action result: ⌨️  Input aa123456 into index 4
+
+ HumanMessage 
+Action error: Expecting value: line 10 column 1 (char 9)
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 9: 登录
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 📄  Extracted from page
+: ```json
+{
+  "page_content": {
+    "top_right_corner": "19900000042",
+    "navigation_links": [
+      "首页",
+      "热映观影",
+      "演出话剧",
+      "生日礼遇",
+      "图书",
+      "网易严选",
+      "东福超市",
+      "节日礼包",
+      "元气森林",
+      "优选生活",
+      "旅游玩乐",
+      "健康生活",
+      "京东优选",
+      "小米有品",
+      "花礼网"
+    ],
+    "contact_info": {
+      "phone_number": "400-618-2999",
+      "operating_hours": "周一至周日 9:00-21:00"
+    },
+    "images": [
+      "https://image.dongfangfuli.com/staticfile/bfd-pc_footer_bg.png",
+      "https://qiyukf.nosdn.127.net/sdk/res/kefu/custom/4.png"
+    ]
+  },
+  "goal_verification": {
+    "top_right_corner_displays": "19900000042",
+    "verification_status": "Verified"
+  }
+}
+```
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 📄  Extracted from page
+: ```json
+{
+  "page_content": "2024自动化必测-百福得上海消息19900000042个人中心退出登录全局公告![]()400-618-2999\n\n周一至周日 9:00-21:00\n\n* 首页\n* 热映观影\n* 演出话剧\n* 生日礼遇\n* 图书\n* 网易严选\n* 东福超市\n* 节日礼包\n* 元气森林\n* 优选生活\n* 旅游玩乐\n* 健康生活\n* 京东优选\n* 小米有品\n* 花礼网\n\n返回\n\n顶部\n\n![](https://image.dongfangfuli.com/staticfile/bfd-pc_footer_bg.png)![](https://qiyukf.nosdn.127.net/sdk/res/kefu/custom/4.png)",
+  "goal": "Verify the homepage contains '百福得'",
+  "verification": {
+    "contains_百福得": true,
+    "locations": [
+      {
+        "text": "百福得",
+        "context": "2024自动化必测-百福得上海消息19900000042个人中心退出登录全局公告"
+      },
+      {
+        "text": "百福得",
+        "context": "![](https://image.dongfangfuli.com/staticfile/bfd-pc_footer_bg.png)"
+      }
+    ]
+  }
+}
+```
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input 2024自动化普通优选 into index 3
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 4:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 13:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action error: Error executing action click_element: Element with index 14 does not exist - retry or use alternative actions
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔍  Scrolled to text: 立即购买
+
+ HumanMessage 
+Action result: Something new appeared after action 1 / 2
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 22:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 21:
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 22: 
+1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action error: Error executing action click_element: Element with index 23 does not exist - retry or use alternative actions
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action error: Error executing action click_element: Element with index 24 does not exist - retry or use alternative actions
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://corp-stage.dongfangfuli.com/shop/shopping/cart
+Available tabs:
+[TabInfo(page_id=0, url='https://corp-stage.dongfangfuli.com/health/search?city=145&keywords=2024%E8%87%AA%E5%8A%A8%E5%8C%96%E6%99%AE%E9%80%9A%E4%BC%98%E9%80%89', title='2024自动化必测-百福得'), TabInfo(page_id=1, url='https://corp-stage.dongfangfuli.com/shop/shopping/cart', title='优选生活 - 购物车')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<a 企业首页/>
+[1]<img />
+上海
+[2]<a 消息/>
+[3]<img />
+[4]<span 简体中文/>
+[5]<span 19900000042/>
+全局公告
+[6]<img />
+400-618-2999
+周一至周日 9:00-21:00
+[7]<input text;请输入关键词/>
+我的购物车
+送至
+
+上海市上海长宁区华阳路街道
+
+选择新地址
+
+选择新地址
+
+常用地址
+
+广东省广州南沙区南沙街道东方福利网
+
+上海市上海静安区石门二路街道UI自动化上海
+全选
+商品信息
+单价(人民币)
+数量
+金额(人民币)
+操作
+
+仓库2
+[8]<span 满300.00人民币包邮，还差240.00人民币包邮/>
+去凑单
+[9]<img />
+优选频道
+2024自动化普通优选
+商品编码010101026202
+规格：入仓A1
+
+60.00
+-
+[10]<input number/>
++
+60.00
+删除
+全选
+删除选中商品
+已选商品
+1
+件
+合计
+[11]<img />
+60.00
+不含运费
+去结算
+[12]<div />
+[13]<div 贴心客服热线
+400-618-2999
+周一至周日 09:00-21:00/>
+[14]<div />
+
+[End of page]
+Current step: 17/100Current date and time: 2025-03-07 16:10
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Failed - Element with index 24 does not exist",
+    "memory": "Logged in successfully. I have completed 10/10 steps. Next, I need to click '\u786e\u8ba4\u652f\u4ed8' and verify the payment success. Element with index 24 does not exist, trying alternative approach.",
+    "next_goal": "Click '\u786e\u8ba4\u652f\u4ed8' and verify the payment success"
+  },
+  "action": [
+    {
+      "scroll_to_text": {
+        "text": "\u786e\u8ba4\u652f\u4ed8"
+      }
+    },
+    {
+      "click_element": {
+        "index": 25
+      }
+    }
+  ]
+}

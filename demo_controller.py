@@ -45,7 +45,8 @@ async def site_validation():
     task = (
         'Important: I am UI Automation tester validating the tasks'
         '打开 https://corp.m.stage.dongfangfuli.com/bfd-app?union=dfshwx'
-        '输入账号 "19900000042" 和密码 "aa123456"登录'
+        '输入账号 "19900000042" 和密码 "aa123456"'
+        '点击登录'
         '搜索商品 "2024自动化普通优选"'
         '点击商品，进入详情页面，点击立即购买'
         '验证商品名称，价格，数量，总价'
@@ -55,7 +56,11 @@ async def site_validation():
     )
 
     # Initialize the model
-    # llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash-exp', api_key=SecretStr(os.getenv('GEMINI_API_KEY')))
+    # llm = ChatGoogleGenerativeAI(
+    #     model='gemini-2.0-flash-exp', 
+    #     api_key=SecretStr(os.getenv('GEMINI_API_KEY'))
+    #     )
+    
     llm = ChatOpenAI(
         base_url='https://api.deepseek.com/v1',
         model='deepseek-chat', 

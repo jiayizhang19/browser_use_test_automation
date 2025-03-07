@@ -11,4 +11,7 @@ async def execute(task):
     print('test result:',test_result)
     # print('Raw API Response:', json.dumps(test_result, indent=2, ensure_ascii=False)
 
-asyncio.run(execute(other_task))
+asyncio.run(
+    # execute(other_task),
+    execute(login_bfd_task)
+)
