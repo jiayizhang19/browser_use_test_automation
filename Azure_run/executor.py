@@ -1,6 +1,6 @@
 
 import asyncio
-from agent import initialize_agent
+from azure_agent import initialize_agent
 from case import *
 
 
@@ -11,7 +11,8 @@ async def execute(task):
     print('test result:',test_result)
     # print('Raw API Response:', json.dumps(test_result, indent=2, ensure_ascii=False)
 
-asyncio.run(
-    # execute(other_task),
-    execute(login_bfd_task)
+if __name__ == '__main__':
+    asyncio.run(
+    execute(other_task)
+    # execute(login_bfd_task)
 )
